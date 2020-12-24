@@ -113,7 +113,7 @@ class TLClassifier(object):
                     rospy.logwarn("roi dimensions not correct")
                     pass
                 else:
-                    rospy.loginfo('traffic light detected')
+                    #rospy.loginfo('traffic light detected')
                     traffic_light = roi
 
         return traffic_light

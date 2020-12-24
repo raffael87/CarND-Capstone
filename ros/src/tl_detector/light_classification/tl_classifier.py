@@ -8,6 +8,8 @@ import numpy as np
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
+        self.done = 0
+        self.out = 0
 
         # get working directory path
         working_directory = os.path.dirname(os.path.realpath(__file__))
@@ -44,7 +46,7 @@ class TLClassifier(object):
         if roi is None:
             return TrafficLight.UNKNOWN
 
-        class_image = cv2.resize( image[box[0]:box[2], box[1]:box[3]], (32,32) )
+        class_image = cv2.resize( image[roi[0]:roi[2], roi[1]:roi[3]], (32,32) )
         if self.out:
             cv2.imwrite('/home/imageration.jpg',class_image)
             self.done=1

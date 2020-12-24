@@ -8,6 +8,8 @@
 
 # Self-Driving Car Engineer Nanodegree Capstone project
 ## Descrption
+Because of time issues the project was done without team.
+Raffael Lorenz raffael.lorenz@gmail.com
 ### Architecture
 In this project ROS (robot operating system) is used as it is quite flexible when creating autonomous systems or robots.
 The main components / nodes of this project are

@@ -8,13 +8,12 @@ import numpy as np
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
-        #self.done = 0
-        #self.out = 0
 
         # settings
         self.min_roi_size = 20
         self.traffic_light_class_id = 10
         self.threshold_roi = 0.4
+        self.threshold_color = 3
 
         # get working directory path
         working_directory = os.path.dirname(os.path.realpath(__file__))
@@ -46,38 +45,37 @@ class TLClassifier(object):
 
         """
         #TODO implement light color prediction
-        roi = self.roi_for_traffic_light(image)
+        roi = self.classify_traffic_light(image)
 
         if roi is None:
             return TrafficLight.UNKNOWN
 
-        class_image = cv2.resize( image[roi[0]:roi[2], roi[1]:roi[3]], (32,32) )
-        #if self.out:
-        #    cv2.imwrite('/home/imageration.jpg',class_image)
-        #    self.done=1
+        return self.classify_color(roi)
 
+    def classify_color(self, image):
+        class_image = cv2.resize( image[roi[0]:roi[2], roi[1]:roi[3]], (32,32) )
 
         img_hsv = cv2.cvtColor(class_image, cv2.COLOR_BGR2HSV)
 
-        mask1 = cv2.inRange(img_hsv, (0,50,20), (5,255,255)) # red color range left
-        mask2 = cv2.inRange(img_hsv, (175,50,20), (180,255,255)) # red color range right
-        mask_red = cv2.bitwise_or(mask1, mask2 )
+        mask_left = cv2.inRange(img_hsv, (0,50,20), (5,255,255)) # red
+        mask_right = cv2.inRange(img_hsv, (175,50,20), (180,255,255))
+        mask_red = cv2.bitwise_or(mask_left, mask_right )
         mask_green = cv2.inRange(img_hsv, (36, 25, 25), (70, 255,255))
         mask_yellow = cv2.inRange(img_hsv, (20, 100, 100), (30, 255,255))
 
-        if cv2.countNonZero(mask_red) > 3:
+        if cv2.countNonZero(mask_red) > self.threshold_color:
             rospy.loginfo("####Traffic color RED")
             return TrafficLight.RED
-        elif cv2.countNonZero(mask_green) > 3::
+        elif cv2.countNonZero(mask_green) > self.threshold_color:
             rospy.loginfo("####Traffic color GREEN")
             return TrafficLight.GREEN
-        elif cv2.countNonZero(mask_green) > 3::
+        elif cv2.countNonZero(mask_yellow) > self.threshold_color:
             rospy.loginfo("####Traffic color YELLOW")
             return TrafficLight.YELLOW
 
         return TrafficLight.UNKNOWN
 
-    def roi_for_traffic_light(self, image):
+    def classify_traffic_light(self, image):
         with self.detection_graph.as_default():
             #switch from BGR to RGB. Important otherwise detection won't work
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -92,8 +90,7 @@ class TLClassifier(object):
             detection_classes = np.squeeze(detection_classes)
             detection_scores  = np.squeeze(detection_scores)
 
-
-            ret = None
+            traffic_light = None
             # Find first detection of signal. It's labeled with number 10
             traffic_light_index = -1
             for i, current_class in enumerate(detection_classes.tolist()):
@@ -107,25 +104,21 @@ class TLClassifier(object):
                 pass
             else:
                 dim = image.shape[0:2]
-                box = self.from_normalized_dims__to_pixel(detection_boxes[traffic_light_index], dim)
-                box_h, box_w  = (box[2] - box[0], box[3]-box[1])
-                if (box_h < self.min_roi_size) or (box_w < self.min_roi_size):
-                    rospy.logwarn("Box too small")
-                    pass    # box too small
-                elif ( box_h/box_w < 1.6):
-                    rospy.logwarn("Box wrong ratio: "+str(box))
-                    #self.out=1
-                    pass    # wrong ratio #hmm
-                    #ret = box
+                roi = self.convert_to_pix(detection_boxes[traffic_light_index], dim)
+                roi_height = roi[2] - roi[0]
+                roi_width  = roi[3] - roi[1]
+                if (roi_height < self.min_roi_size) or (roi_width < self.min_roi_size):
+                    rospy.logwarn("roi smaller min size " + str(self.min_roi_size))
+                    pass
+                elif ((roi_height / roi_width) < 1.6):
+                    rospy.logwarn("roi dimensions not correct)
+                    pass
                 else:
-                    #if self.done==1:
-                        #self.out=0
-                    rospy.loginfo('detected bounding box: {} conf: {}'.format(box, detection_scores[traffic_light_index]))
-                    ret = box
+                    rospy.loginfo('traffic light detected'))
+                    traffic_light = roi
 
-        return ret
+        return traffic_light
 
-    def from_normalized_dims__to_pixel(self, box, dim):
+    def convert_to_pix(self, roi, dim):
             height, width = dim[0], dim[1]
-            box_pixel = [int(box[0]*height), int(box[1]*width), int(box[2]*height), int(box[3]*width)]
-            return np.array(box_pixel)
+            return np.array([int(roi[0]*height), int(roi[1]*width), int(roi[2]*height), int(roi[3]*width)])

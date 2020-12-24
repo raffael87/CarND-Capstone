@@ -111,7 +111,7 @@ class TLClassifier(object):
                     rospy.logwarn("roi smaller min size " + str(self.min_roi_size))
                     pass
                 elif ((roi_height / roi_width) < 1.6):
-                    rospy.logwarn("roi dimensions not correct)
+                    rospy.logwarn("roi dimensions not correct")
                     pass
                 else:
                     rospy.loginfo('traffic light detected'))

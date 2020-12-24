@@ -7,6 +7,8 @@ from styx_msgs.msg import Lane
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from light_classification.tl_classifier import TLClassifier
+from scipy.spatial import KDTree
+
 import tf
 import cv2
 import yaml
@@ -22,6 +24,8 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
         self.waypoint_tree = None
+        self.waypoints_2d = None
+
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -164,7 +168,7 @@ class TLDetector(object):
 
         if closest_light:
             state = self.get_light_state(closest_light)
-            return light_wp_index, state
+            return line_wp_index, state
 
         #self.waypoints = None
         # if cannot find traffic light

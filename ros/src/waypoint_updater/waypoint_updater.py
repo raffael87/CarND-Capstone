@@ -106,14 +106,14 @@ class WaypointUpdater(object):
             p = Waypoint() # new message
             p.pose = waypoint.pose
 
-            stop_index = max(self.stopline_wp_idx - closest_idx - 2, 0) # stop two waypoints before line, without -2 we would stop with car center on line
+            stop_index = max(self.stopline_wp_index - closest_idx - 2, 0) # stop two waypoints before line, without -2 we would stop with car center on line
             calc_distance = self.distance(waypoints, i, stop_index)
             velocity = math.sqrt(2 * MAX_DECEL * calc_distance) # as distance between waypoint and stop waypoint get small we decelerate
 
             if velocity < 1.0:
                 velocity = 0.0 # stop the car
 
-            p.twist.twist.linear.x = min(velocity, wp.twist.twist.linear.x) # because of square root, if distance is too far, square root (velocity) would be too big.
+            p.twist.twist.linear.x = min(velocity, waypoint.twist.twist.linear.x) # because of square root, if distance is too far, square root (velocity) would be too big.
             temp.append(p)
 
         return temp

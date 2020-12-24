@@ -17,16 +17,16 @@ class TLClassifier(object):
 
         with self.detection_graph.as_default():
             gdef = tf.GraphDef()
-            with open(cwd + "/frozen_inference_graph.pb", 'rb') as f:
+            with open(working_directory + "/frozen_inference_graph.pb", 'rb') as f:
                 gdef.ParseFromString( f.read() )
                 tf.import_graph_def( gdef, name="" )
 
             self.session_dg = tf.Session(graph=self.detection_graph )
-            self.image_tensor = self.dg.get_tensor_by_name('image_tensor:0')
-            self.detection_boxes =  self.dg.get_tensor_by_name('detection_boxes:0')
-            self.detection_scores = self.dg.get_tensor_by_name('detection_scores:0')
-            self.detection_classes = self.dg.get_tensor_by_name('detection_classes:0')
-            self.num_detections    = self.dg.get_tensor_by_name('num_detections:0')
+            self.image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
+            self.detection_boxes =  self.detection_graph.get_tensor_by_name('detection_boxes:0')
+            self.detection_scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
+            self.detection_classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
+            self.num_detections    = self.detection_graph.get_tensor_by_name('num_detections:0')
 
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
@@ -51,7 +51,7 @@ class TLClassifier(object):
         return TrafficLight.UNKNOWN
 
     def roi_for_traffic_light(self, image):
-        with self.dg.as_default():
+        with self.detection_graph.as_default():
             #switch from BGR to RGB. Important otherwise detection won't work
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
@@ -99,3 +99,8 @@ class TLClassifier(object):
                     ret = box
 
         return ret
+
+    def from_normalized_dims__to_pixel(self, box, dim):
+            height, width = dim[0], dim[1]
+            box_pixel = [int(box[0]*height), int(box[1]*width), int(box[2]*height), int(box[3]*width)]
+            return np.array(box_pixel)

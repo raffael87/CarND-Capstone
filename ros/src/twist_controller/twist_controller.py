@@ -1,5 +1,6 @@
-from jaw_controller import YawController
+from yaw_controller import YawController
 from pid import PID
+from lowpass import LowPassFilter
 import rospy
 
 GAS_DENSITY = 2.858

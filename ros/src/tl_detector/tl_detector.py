@@ -126,7 +126,7 @@ class TLDetector(object):
         """
         if(not self.has_image):
             self.prev_light_loc = None
-           return False
+            return False
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 

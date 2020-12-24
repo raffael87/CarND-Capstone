@@ -8,8 +8,13 @@ import numpy as np
 class TLClassifier(object):
     def __init__(self):
         #TODO load classifier
-        self.done = 0
-        self.out = 0
+        #self.done = 0
+        #self.out = 0
+
+        # settings
+        self.min_roi_size = 20
+        self.traffic_light_class_id = 10
+        self.threshold_roi = 0.4
 
         # get working directory path
         working_directory = os.path.dirname(os.path.realpath(__file__))
@@ -47,9 +52,9 @@ class TLClassifier(object):
             return TrafficLight.UNKNOWN
 
         class_image = cv2.resize( image[roi[0]:roi[2], roi[1]:roi[3]], (32,32) )
-        if self.out:
-            cv2.imwrite('/home/imageration.jpg',class_image)
-            self.done=1
+        #if self.out:
+        #    cv2.imwrite('/home/imageration.jpg',class_image)
+        #    self.done=1
 
 
         img_hsv = cv2.cvtColor(class_image, cv2.COLOR_BGR2HSV)
@@ -58,10 +63,10 @@ class TLClassifier(object):
         mask = cv2.bitwise_or(mask1, mask2 )
         if cv2.countNonZero(mask) > 3:
             #print('Red is present!')
-            rospy.logwarn("####Traffic light found: "+str(box))
+            rospy.loginfo("####Traffic color green")
             return TrafficLight.RED
         else:
-            rospy.logwarn("####Traffic light not red: "+str(box))
+            rospy.loginfo("####Traffic color other")
             #print('Red is not present!')
         #croped = cv2.bitwise_and(img, img, mask=mask)
         #cv2.imshow("mask", mask)
@@ -85,35 +90,33 @@ class TLClassifier(object):
 
 
             ret = None
-            detection_threshold = 0.4
-
             # Find first detection of signal. It's labeled with number 10
-            idx = -1
-            for i, cl in enumerate(detection_classes.tolist()):
-                if cl == 10:
-                    idx = i;
+            traffic_light_index = -1
+            for i, current_class in enumerate(detection_classes.tolist()):
+                if current_class == self.traffic_light_class_id:
+                    traffic_light_index = i;
                     break;
 
-            if idx == -1:
-                pass  # no signals detected
-            elif detection_scores[idx] < detection_threshold:
-                pass # we are not confident of detection
+            if traffic_light_index == -1: # traffic light was not found
+                pass
+            elif detection_scores[traffic_light_index] < self.threshold_roi: # classification score of traffic light is not good enough
+                pass
             else:
                 dim = image.shape[0:2]
-                box = self.from_normalized_dims__to_pixel(detection_boxes[idx], dim)
+                box = self.from_normalized_dims__to_pixel(detection_boxes[traffic_light_index], dim)
                 box_h, box_w  = (box[2] - box[0], box[3]-box[1])
-                if (box_h < 20) or (box_w < 20):
+                if (box_h < self.min_roi_size) or (box_w < self.min_roi_size):
                     rospy.logwarn("Box too small")
                     pass    # box too small
                 elif ( box_h/box_w < 1.6):
                     rospy.logwarn("Box wrong ratio: "+str(box))
-                    self.out=1
-#                    pass    # wrong ratio
-                    ret = box
+                    #self.out=1
+                    pass    # wrong ratio #hmm
+                    #ret = box
                 else:
-                    if self.done==1:
-                        self.out=0
-                    rospy.loginfo('detected bounding box: {} conf: {}'.format(box, detection_scores[idx]))
+                    #if self.done==1:
+                        #self.out=0
+                    rospy.loginfo('detected bounding box: {} conf: {}'.format(box, detection_scores[traffic_light_index]))
                     ret = box
 
         return ret

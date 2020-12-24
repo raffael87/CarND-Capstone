@@ -50,7 +50,22 @@ class TLClassifier(object):
         if self.out:
             cv2.imwrite('/home/imageration.jpg',class_image)
             self.done=1
-        return TrafficLight.UNKNOWN
+
+
+        img_hsv = cv2.cvtColor(class_image, cv2.COLOR_BGR2HSV)
+        mask1 = cv2.inRange(img_hsv, (0,50,20), (5,255,255))
+        mask2 = cv2.inRange(img_hsv, (175,50,20), (180,255,255))
+        mask = cv2.bitwise_or(mask1, mask2 )
+        if cv2.countNonZero(mask) > 3:
+            #print('Red is present!')
+            rospy.logwarn("####Traffic light found: "+str(box))
+            return TrafficLight.RED
+        else:
+            print('Red is not present!')
+        #croped = cv2.bitwise_and(img, img, mask=mask)
+        #cv2.imshow("mask", mask)
+        #cv2.imshow("croped", croped)
+        return TrafficLight.GREEN
 
     def roi_for_traffic_light(self, image):
         with self.detection_graph.as_default():

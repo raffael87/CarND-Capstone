@@ -61,7 +61,8 @@ class TLClassifier(object):
             rospy.logwarn("####Traffic light found: "+str(box))
             return TrafficLight.RED
         else:
-            print('Red is not present!')
+            rospy.logwarn("####Traffic light not red: "+str(box))
+            #print('Red is not present!')
         #croped = cv2.bitwise_and(img, img, mask=mask)
         #cv2.imshow("mask", mask)
         #cv2.imshow("croped", croped)

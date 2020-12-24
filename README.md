@@ -1,3 +1,49 @@
+[//]: # (Image References)
+
+[image1]: ./imgs/light_green.jpg "green light"
+[image2]: ./imgs/light_yellow.jpg "yellow light"
+[image3]: ./imgs/light_red.jpg "red light"
+[image4]: ./imgs/outputs.png "outputs"
+[image5]: ./imgs/ros_graph.png "ROS graph"
+
+# Self-Driving Car Engineer Nanodegree Capstone project
+## Descrption
+### Architecture
+In this project ROS (robot operating system) is used as it is quite flexible when creating autonomous systems or robots.
+The main components / nodes of this project are
+Here the whole ROS architecture represented by a ROS graph (image from udacity classroom):
+
+![alt text][image5]
+
+### Details
+Path planner component (Planning)
+In this component the path handling is done. Waypoints are being calculated and 200 in front of the car are published. The planner interacts with the traffic light components and gets from it waypoint telling where a traffic light is and which color it has. The component adapts then the path with this waypoint in order to slow down and finally stop the car if needed.
+
+Control component
+The drive by wire node (DBW) is subscribed to the vehicle actuators and transforms them into steering, throttle and brake commands. A proportional–integral–derivative controller (PID) is used to generate the throttle depending on velocity error and current time.
+
+Traffic light detector component (Perception)
+Detects the traffic lights on the road and makes then a classification to the light color. The position of the light and its status are then published.
+The traffic light detection was done with a pre trained model from tensorflow itself. I chose the ssd_mobilenet_v1_coco because it is a small and fast one and for trainings purpose ok. Of course a soley trained traffic light model would have been much better.
+The output are boxes, classes and the scores. So knwoing the id for traffic lights, it then can be checked if it was detected and depending on the threshold it is accepted.
+Here some boxes:
+
+![alt text][image1]
+
+![alt text][image2]
+
+![alt text][image3]
+
+These boxes arer then being color classified. At the moment it is a simple HSV color space classification. It would be better to have also a trained model for it.
+
+![alt text][image4]
+
+A video can be found here:
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/NbZmHJDQHMs/0.jpg)](http://www.youtube.com/watch?v=NbZmHJDQHMs "Traffic light driving")
+
+## Project pre work
+
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
 
 Please use **one** of the two installation options, either native **or** docker installation.

@@ -49,11 +49,10 @@ class WaypointUpdater(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(10) # if 50 car does not follow waypoints
+        rate = rospy.Rate(10) # if 50 car does not follow waypoints, possible solution deactivating logic in pure pursuit cpp
         while not rospy.is_shutdown():
             if self.pose and self.base_waypoints and self.waypoint_tree:
-                closest_waypoint_idx = self.get_closest_waypoint_idx()
-                self.publish_waypoints(closest_waypoint_idx)
+                self.publish_waypoints()
             rate.sleep()
 
     def get_closest_waypoint_idx(self):
@@ -78,7 +77,7 @@ class WaypointUpdater(object):
 
         return closest_idx
 
-    def publish_waypoints(self, closest_idx):
+    def publish_waypoints(self):#, closest_idx):
         #lane = Lane()
         #lane.header = self.base_waypoints.header
         #lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]

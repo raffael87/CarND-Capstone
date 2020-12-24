@@ -58,20 +58,24 @@ class TLClassifier(object):
 
 
         img_hsv = cv2.cvtColor(class_image, cv2.COLOR_BGR2HSV)
-        mask1 = cv2.inRange(img_hsv, (0,50,20), (5,255,255))
-        mask2 = cv2.inRange(img_hsv, (175,50,20), (180,255,255))
-        mask = cv2.bitwise_or(mask1, mask2 )
-        if cv2.countNonZero(mask) > 3:
-            #print('Red is present!')
-            rospy.loginfo("####Traffic color green")
+
+        mask1 = cv2.inRange(img_hsv, (0,50,20), (5,255,255)) # red color range left
+        mask2 = cv2.inRange(img_hsv, (175,50,20), (180,255,255)) # red color range right
+        mask_red = cv2.bitwise_or(mask1, mask2 )
+        mask_green = cv2.inRange(img_hsv, (36, 25, 25), (70, 255,255))
+        mask_yellow = cv2.inRange(img_hsv, (20, 100, 100), (30, 255,255))
+
+        if cv2.countNonZero(mask_red) > 3:
+            rospy.loginfo("####Traffic color RED")
             return TrafficLight.RED
-        else:
-            rospy.loginfo("####Traffic color other")
-            #print('Red is not present!')
-        #croped = cv2.bitwise_and(img, img, mask=mask)
-        #cv2.imshow("mask", mask)
-        #cv2.imshow("croped", croped)
-        return TrafficLight.GREEN
+        elif cv2.countNonZero(mask_green) > 3::
+            rospy.loginfo("####Traffic color GREEN")
+            return TrafficLight.GREEN
+        elif cv2.countNonZero(mask_green) > 3::
+            rospy.loginfo("####Traffic color YELLOW")
+            return TrafficLight.YELLOW
+
+        return TrafficLight.UNKNOWN
 
     def roi_for_traffic_light(self, image):
         with self.detection_graph.as_default():

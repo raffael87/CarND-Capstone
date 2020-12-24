@@ -49,12 +49,11 @@ class TLClassifier(object):
 
         if roi is None:
             return TrafficLight.UNKNOWN
-
-        return self.classify_color(roi)
-
-    def classify_color(self, image):
         class_image = cv2.resize( image[roi[0]:roi[2], roi[1]:roi[3]], (32,32) )
 
+        return self.classify_color(class_image)
+
+    def classify_color(self, class_image):
         img_hsv = cv2.cvtColor(class_image, cv2.COLOR_BGR2HSV)
 
         mask_left = cv2.inRange(img_hsv, (0,50,20), (5,255,255)) # red
